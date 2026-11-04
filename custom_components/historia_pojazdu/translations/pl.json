@@ -3,21 +3,46 @@
     "step": {
       "user": {
         "title": "Historia Pojazdu",
-        "description": "Podaj dane pojazdu. Data pierwszej rejestracji w formacie RRRR-MM-DD.",
+        "description": "Dane pojazdu z dowodu rejestracyjnego. Zostaną sprawdzone w usłudze Historia Pojazdu.",
         "data": {
           "name": "Nazwa",
           "registration": "Numer rejestracyjny",
           "vin": "VIN",
           "first_registration": "Data pierwszej rejestracji"
+        },
+        "data_description": {
+          "name": "Dowolna nazwa, np. Volvo.",
+          "registration": "Bez spacji, np. WA12345.",
+          "vin": "17 znaków, pole E w dowodzie rejestracyjnym.",
+          "first_registration": "Pole B w dowodzie rejestracyjnym."
+        }
+      },
+      "reconfigure": {
+        "title": "Zmień dane pojazdu",
+        "description": "VIN nie może zostać zmieniony. Aby dodać inny pojazd, dodaj nowy wpis.",
+        "data": {
+          "name": "Nazwa",
+          "registration": "Numer rejestracyjny",
+          "first_registration": "Data pierwszej rejestracji"
+        },
+        "data_description": {
+          "name": "Dowolna nazwa, np. Volvo.",
+          "registration": "Bez spacji, np. WA12345.",
+          "first_registration": "Pole B w dowodzie rejestracyjnym."
         }
       }
     },
     "error": {
-      "invalid_date": "Podaj poprawną datę pierwszej rejestracji w formacie RRRR-MM-DD.",
-      "invalid_data": "Sprawdź nazwę, numer rejestracyjny i VIN."
+      "invalid_name": "Podaj nazwę.",
+      "invalid_registration": "Numer rejestracyjny: 2–10 liter i cyfr.",
+      "invalid_vin": "VIN musi mieć 17 znaków (bez liter I, O, Q).",
+      "invalid_date": "Podaj poprawną datę, nie późniejszą niż dzisiaj.",
+      "vehicle_rejected": "Usługa nie znalazła pojazdu dla tych danych. Sprawdź numer, VIN i datę.",
+      "cannot_connect": "Nie udało się połączyć z usługą Historia Pojazdu. Spróbuj później."
     },
     "abort": {
-      "already_configured": "Ten pojazd jest już skonfigurowany."
+      "already_configured": "Ten pojazd jest już skonfigurowany.",
+      "reconfigure_successful": "Dane pojazdu zostały zmienione."
     }
   },
   "entity": {
@@ -28,14 +53,14 @@
       "inspection": {
         "name": "Następne badanie techniczne"
       },
+      "odometer": {
+        "name": "Ostatni stan licznika z badania"
+      },
       "last_success": {
         "name": "Ostatnia udana aktualizacja"
       },
       "status": {
         "name": "Stan pobierania"
-      },
-      "odometer": {
-        "name": "Ostatni stan licznika z badania"
       }
     },
     "button": {

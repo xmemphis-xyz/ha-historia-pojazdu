@@ -1,30 +1,107 @@
 # Historia Pojazdu dla Home Assistant
 
-![Logo Historia Pojazdu](https://raw.githubusercontent.com/jarekgrzabel/ha-historia-pojazdu/main/custom_components/historia_pojazdu/brand/icon.png)
+![Logo Historia Pojazdu](https://raw.githubusercontent.com/xmemphis-xyz/ha-historia-pojazdu/main/custom_components/historia_pojazdu/brand/icon.png)
 
-Nieoficjalna integracja odczytuje datę ważności OC i następnego badania technicznego z Historia Pojazdu. Nie wymaga MQTT, dodatku ani sterowania przeglądarką. Kod protokołu i parser powstały na podstawie [historia-pojazdu-sdk](https://github.com/Korea77/historia-pojazdu-sdk), commit `1f4c496ef728011903b308dfa90d74409da05740`; udostępniane są na licencji GPL-3.0 (plik LICENSE).
+Nieoficjalna integracja, która odczytuje z serwisu [Historia Pojazdu](https://historiapojazdu.gov.pl/) datę ważności OC, termin następnego badania technicznego i stan licznika z ostatniego badania. Nie wymaga MQTT, dodatku ani sterowania przeglądarką.
 
-## Instalacja i konfiguracja
+To rozwinięta wersja [jarekgrzabel/ha-historia-pojazdu](https://github.com/jarekgrzabel/ha-historia-pojazdu). Kod protokołu i parser powstały na podstawie [historia-pojazdu-sdk](https://github.com/Korea77/historia-pojazdu-sdk) (commit `1f4c496ef728011903b308dfa90d74409da05740`). Całość jest udostępniona na licencji GPL-3.0 (plik LICENSE).
 
-1. Utwórz kopię zapasową Home Assistant i zachowaj poprzednią wersję katalogu `custom_components/historia_pojazdu`, jeśli istnieje.
-2. Zainstaluj katalog `custom_components/historia_pojazdu` z tego repozytorium w analogicznym katalogu konfiguracji Home Assistant, albo dodaj to repozytorium jako niestandardowe repozytorium integracji HACS. Przy pierwszej instalacji konieczne może być ponowne uruchomienie HA.
-3. W Ustawieniach → Urządzenia i usługi → Dodaj integrację wybierz Historia Pojazdu. Dodaj osobny wpis dla każdego samochodu, podając nazwę, rejestrację, VIN i datę pierwszej rejestracji w formacie RRRR-MM-DD.
-4. Sprawdź utworzone encje oraz ich stan pobierania. Odrębną automatyzację powiadomień skonfiguruj dopiero po sprawdzeniu nazw encji i dostępności właściwej akcji powiadomienia.
+## Instalacja
 
-Integracja udostępnia sensory ważności OC, następnego badania technicznego, ostatniej w pełni udanej aktualizacji i stanu pobierania oraz przycisk Odśwież dane. Identyfikatory są stabilne w obrębie wpisu integracji. Wartości pobierane są podczas uruchomienia wpisu w tle i co 24 godziny, a także po naciśnięciu przycisku. Godzina aktualizacji zależy od działania HA; udane jednorazowe pobranie nie dowodzi działania całego dobowego harmonogramu.
+1. Zrób kopię zapasową Home Assistant.
+2. W HACS → menu ⋮ → **Niestandardowe repozytoria** dodaj `https://github.com/xmemphis-xyz/ha-historia-pojazdu` jako typ **Integracja**, zainstaluj ją i uruchom HA ponownie. Możesz też ręcznie skopiować katalog `custom_components/historia_pojazdu`.
+3. W **Ustawieniach → Urządzenia i usługi → Dodaj integrację** wybierz **Historia Pojazdu** i podaj dane z dowodu rejestracyjnego:
+   - nazwę (dowolną, np. „Volvo”),
+   - numer rejestracyjny (spacje są usuwane automatycznie),
+   - VIN (pole E),
+   - datę pierwszej rejestracji (pole B): wybierz ją w kalendarzu albo wpisz jako `RRRR-MM-DD` lub `DD.MM.RRRR`.
 
-Sensor ostatniego stanu licznika z badania pokazuje najnowszy dostępny odczyt z badania technicznego oraz jego datę w atrybucie `data_odczytu`. Odczyty z kontroli drogowej nie są uwzględniane. Nie jest to bieżący przebieg pojazdu. Brak odczytu oznacza stan nieznany; poprzedni poprawny wynik zostaje zachowany po awarii lub restarcie, a atrybut `aktualnosc` wskazuje jego status. Odczyt pochodzi z tego samego zapytania co pozostałe dane. Format danych badania nie został jeszcze potwierdzony rzeczywistą odpowiedzią usługi, więc obsługa przebiegu ma charakter wstępny.
+   Dane są od razu sprawdzane w usłudze, więc literówka pojawi się jako błąd w formularzu, a nie jako pusty sensor. Każdy samochód to osobny wpis.
 
-Każdy sensor daty ma atrybut `aktualnosc`: `aktualne` po udanym pobraniu danej daty albo `zapisane lub nieaktualne`, gdy dane przywrócono z zapisu lub pobranie tej daty nie powiodło się. Sensor stanu opisuje problem. Czas ostatniej udanej aktualizacji oznacza pobranie obu dat; aktualizacja częściowa go nie zmienia. Nieznana data OC nie oznacza braku polisy. Zapisane daty są przechowywane w lokalnej pamięci HA po restarcie i nie są usuwane w razie błędu. Jeśli ostatnie zdarzenie badania nie zawiera jednoznacznego terminu, poprzedni termin nie zostanie potraktowany jako świeży.
+Po zmianie tablic rejestracyjnych użyj opcji **Zmień konfigurację** przy wpisie integracji. VIN identyfikuje pojazd i nie podlega zmianie.
+
+## Encje
+
+| Encja | Opis |
+|---|---|
+| Ważność OC | data, atrybut `aktualnosc` |
+| Następne badanie techniczne | data, atrybut `aktualnosc` |
+| Ostatni stan licznika z badania | km lub mi, atrybuty `data_odczytu` i `aktualnosc`; ma `state_class`, więc działa w statystykach |
+| Ostatnia udana aktualizacja | diagnostyczna; moment pobrania obu dat |
+| Stan pobierania | diagnostyczna; `Aktualne` albo opis problemu |
+| Odśwież dane | przycisk |
+
+Dane są pobierane w tle po starcie, co 24 godziny i po naciśnięciu przycisku.
+
+Atrybut `aktualnosc` ma wartość `aktualne` po udanym pobraniu albo `zapisane lub nieaktualne`, gdy wartość przywrócono z zapisu lub ostatnie pobranie się nie powiodło. Zapisane wartości przetrwają restart i nie są kasowane po błędzie. Nieznana data OC nie oznacza braku polisy. Jeśli najnowsze badanie nie ma jednoznacznego terminu, poprzedni termin nie jest uznawany za aktualny.
+
+Stan licznika pochodzi wyłącznie z badań technicznych, nie z kontroli drogowych, więc nie jest to bieżący przebieg.
+
+## Przykład: przypomnienie o OC i przeglądzie
+
+Zmień `sensor.*` na swoje encje i `notify.mobile_app_telefon` na swoją akcję powiadomień.
+
+```yaml
+alias: Przypomnienie OC i przegląd
+triggers:
+  - trigger: time
+    at: "09:00:00"
+conditions: []
+actions:
+  - repeat:
+      for_each:
+        - sensor.volvo_waznosc_oc
+        - sensor.volvo_nastepne_badanie_techniczne
+      sequence:
+        - variables:
+            dni: >
+              {{ ((states(repeat.item) | as_datetime).date() - now().date()).days
+                 if states(repeat.item) not in ['unknown', 'unavailable'] else none }}
+        - if:
+            - condition: template
+              value_template: "{{ dni in [30, 14, 7, 1, 0] }}"
+          then:
+            - action: notify.mobile_app_telefon
+              data:
+                title: "{{ state_attr(repeat.item, 'friendly_name') }}"
+                message: "Termin: {{ states(repeat.item) }} (za {{ dni }} dni)"
+mode: single
+```
 
 ## Bezpieczeństwo i ograniczenia
 
-Połączenia HTTPS weryfikują certyfikat. Każda próba ma ograniczony czas, a kolejne próby są rozdzielone odstępami. Wpis integracji zawiera podane dane pojazdu; chroń dostęp do konfiguracji i kopii zapasowych HA. Do pamięci trwałej trafiają daty, czas aktualizacji i ostatni odczyt licznika z badania. Integracja nie zapisuje pełnych raportów, tokenów ani VIN w zwykłych logach. Interfejs serwisu jest nieoficjalny i może ulec zmianie; nie należy traktować integracji jako jedynego potwierdzenia ważności dokumentów.
+- Połączenia HTTPS weryfikują certyfikat. Każda próba ma ograniczony czas. Błędy sieci i serwera (5xx, 429) są ponawiane z przerwami. Odrzucenie danych pojazdu (4xx) nie jest ponawiane.
+- Wpis integracji zawiera dane pojazdu, więc chroń dostęp do konfiguracji i kopii zapasowych HA. Do pamięci trwałej trafiają tylko daty, czas aktualizacji i odczyt licznika. Logi (także na poziomie `debug`) zawierają jedynie typ błędu i kod HTTP, bez VIN i bez treści odpowiedzi.
+- Interfejs serwisu jest nieoficjalny i może się zmienić. Nie traktuj integracji jako jedynego potwierdzenia ważności dokumentów.
+
+Diagnostykę włączysz w `configuration.yaml`:
+
+```yaml
+logger:
+  logs:
+    custom_components.historia_pojazdu: debug
+```
 
 ## Wycofanie
 
-Wyłącz lub usuń automatyzację powiadomień utworzoną dla integracji, usuń wpisy Historia Pojazdu w ustawieniach HA, a następnie usuń katalog integracji lub przywróć jego poprzednią kopię. W razie potrzeby uruchom HA ponownie. Te kroki nie wymagają zmian w MyToyota ani automatyzacji serwisu producenta. Usunięcie wpisów usuwa ich urządzenia i encje; kopia zapasowa pozwala przywrócić wcześniejszy stan.
+Usuń automatyzacje korzystające z integracji, usuń wpisy Historia Pojazdu w ustawieniach HA, a potem odinstaluj integrację w HACS lub usuń jej katalog. Usunięcie wpisu kasuje też jego zapisane daty.
 
 ## Testy
 
-`python -m unittest discover -s tests` (wymaga `aiohttp`). Zestaw obejmuje format odpowiedzi, wcześniejsze i późniejsze badania, brak lub niejednoznaczność dat oraz błędną odpowiedź. Konieczne są też testy w działającym HA, w tym przywrócenie zapisanych wartości i obsługa nieudanego pobrania.
+```
+python -m unittest discover -s tests
+```
+
+Testy wymagają pakietu `aiohttp`. Home Assistant jest w nich zastąpiony atrapami (`tests/_stubs.py`), więc zachowanie w działającym HA trzeba sprawdzić osobno.
+
+## Zmiany względem wersji bazowej (0.2.0)
+
+- Formularz z kalendarzem, akceptujący też datę `DD.MM.RRRR`, z błędami przy konkretnych polach i sprawdzeniem danych w usłudze przed zapisaniem.
+- Opcja **Zmień konfigurację**, przydatna np. przy nowych tablicach. Unikalność wpisu opiera się teraz na samym VIN.
+- Odrzucone dane pojazdu (4xx) nie są ponawiane i mają czytelny komunikat. 429 i 5xx są ponawiane.
+- Logi diagnostyczne bez danych wrażliwych.
+- Uszkodzony odczyt licznika ze starszego badania nie ukrywa już poprawnego, nowszego odczytu.
+- Sensor licznika ma `state_class` i precyzję wyświetlania.
+- Koordynator dostaje `config_entry` (zgodność z nowszymi wersjami HA), a dane trzymane są w `entry.runtime_data`.
+- Urządzenie typu usługa z linkiem do serwisu oraz tłumaczenia angielskie.
+- Usunięto zduplikowany atrybut `problem` z sensorów dat; problem pokazuje sensor „Stan pobierania”.

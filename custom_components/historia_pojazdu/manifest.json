@@ -1,9 +1,11 @@
 {
   "domain": "historia_pojazdu",
   "name": "Historia Pojazdu",
-  "codeowners": [],
+  "codeowners": ["@xmemphis-xyz"],
   "config_flow": true,
-  "documentation": "https://github.com/jarekgrzabel/ha-historia-pojazdu",
+  "documentation": "https://github.com/xmemphis-xyz/ha-historia-pojazdu",
+  "integration_type": "service",
   "iot_class": "cloud_polling",
-  "version": "0.1.0"
+  "issue_tracker": "https://github.com/xmemphis-xyz/ha-historia-pojazdu/issues",
+  "version": "0.2.0"
 }

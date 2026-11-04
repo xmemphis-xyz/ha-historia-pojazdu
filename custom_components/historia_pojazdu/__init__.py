@@ -15,13 +15,15 @@ from .const import CONF_FIRST_REGISTRATION, CONF_REGISTRATION, CONF_VIN, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 PLATFORMS = ['sensor', 'button']
+_SAVED = ('insurance', 'inspection', 'last_success', 'odometer', 'odometer_unit', 'odometer_date')
 
 
 class VehicleCoordinator(DataUpdateCoordinator):
     """Retain verified dates separately from current retrieval status."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
-        super().__init__(hass, _LOGGER, name=f'{DOMAIN}_{entry.entry_id}', update_interval=timedelta(hours=24))
+        super().__init__(hass, _LOGGER, config_entry=entry, name=f'{DOMAIN}_{entry.entry_id}',
+                         update_interval=timedelta(hours=24))
         self.entry = entry
         self.store = Store(hass, 1, f'{DOMAIN}.{entry.entry_id}')
         self.data = {'insurance': None, 'inspection': None, 'last_success': None,
@@ -53,6 +55,7 @@ class VehicleCoordinator(DataUpdateCoordinator):
                 self.entry.data[CONF_REGISTRATION], self.entry.data[CONF_VIN],
                 self.entry.data[CONF_FIRST_REGISTRATION])
         except FetchError as exc:
+            # Keep the last known dates; the failure is reported by the status sensor.
             result['problem'] = str(exc)
             return result
         missing = []
@@ -73,7 +76,7 @@ class VehicleCoordinator(DataUpdateCoordinator):
         # Persist selected values only, never the report or session tokens.
         if insurance is not None or inspection is not None or odometer is not None:
             try:
-                await self.store.async_save({k: result[k] for k in ('insurance', 'inspection', 'last_success', 'odometer', 'odometer_unit', 'odometer_date')})
+                await self.store.async_save({k: result[k] for k in _SAVED})
             except (OSError, ValueError):
                 result['problem'] = ((result['problem'] + '; ') if result['problem'] else '') + 'Nie udało się zapisać danych'
         return result
@@ -82,7 +85,7 @@ class VehicleCoordinator(DataUpdateCoordinator):
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = VehicleCoordinator(hass, entry)
     await coordinator.restore()
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
+    entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     # Do not hold HA startup while the remote government service is slow.
     entry.async_create_background_task(hass, coordinator.async_refresh(), 'historia_pojazdu_initial_refresh')
@@ -90,10 +93,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    if await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        hass.data[DOMAIN].pop(entry.entry_id)
-        return True
-    return False
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
 async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:

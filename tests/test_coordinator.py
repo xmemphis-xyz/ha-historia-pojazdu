@@ -7,30 +7,12 @@ import unittest
 from datetime import date, datetime, timezone
 from unittest.mock import AsyncMock, patch
 
-BASE = pathlib.Path(__file__).parents[1] / 'custom_components/historia_pojazdu'
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+import _stubs  # noqa: E402
 
-# Small HA boundary stubs allow testing coordinator behavior without installing HA.
-for name in ('homeassistant', 'homeassistant.config_entries', 'homeassistant.core', 'homeassistant.helpers',
-             'homeassistant.helpers.storage', 'homeassistant.helpers.update_coordinator', 'homeassistant.util', 'homeassistant.util.dt'):
-    sys.modules.setdefault(name, types.ModuleType(name))
-sys.modules['homeassistant.config_entries'].ConfigEntry = object
-sys.modules['homeassistant.core'].HomeAssistant = object
-sys.modules['homeassistant.util.dt'].utcnow = lambda: datetime(2026, 10, 30, tzinfo=timezone.utc)
-class Coordinator:
-    def __init__(self, *args, **kwargs): pass
-sys.modules['homeassistant.helpers.update_coordinator'].DataUpdateCoordinator = Coordinator
-class Store:
-    contents = {}
-    def __init__(self, hass, version, key): self.key = key
-    async def async_load(self): return self.contents.get(self.key)
-    async def async_save(self, value): self.contents[self.key] = dict(value)
-sys.modules['homeassistant.helpers.storage'].Store = Store
+integration = _stubs.load()
+Store = sys.modules['homeassistant.helpers.storage'].Store
 
-name = 'custom_components.historia_pojazdu'
-spec = importlib.util.spec_from_file_location(name, BASE / '__init__.py', submodule_search_locations=[str(BASE)])
-integration = importlib.util.module_from_spec(spec)
-sys.modules[name] = integration
-spec.loader.exec_module(integration)
 
 class CoordinatorTests(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
@@ -96,5 +78,12 @@ class CoordinatorTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result['insurance_fresh'])
         self.assertIn('zapisać', result['problem'])
         self.assertNotIn('private path', result['problem'])
+
+    async def test_coordinator_gets_config_entry(self):
+        self.assertIs(self.coord.kwargs['config_entry'], self.entry)
+        mock = AsyncMock(return_value=(date(2031, 5, 6), date(2031, 5, 7), None))
+        with patch.object(integration, 'fetch_report', new=mock):
+            await self.coord._async_update_data()
+        self.assertEqual(mock.await_args.args, ('AA11111', 'X' * 17, '2022-04-05'))
 
 if __name__ == '__main__': unittest.main()

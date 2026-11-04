@@ -35,6 +35,14 @@ class ParserTests(unittest.TestCase):
         self.assertIsNone(api.parse_report(report([reading('2025-01-01', 'abc km')]))[2])
         self.assertIsNone(api.parse_report(report([reading('2025-01-01', '123 km'), reading('2025-01-01', '456 km')]))[2])
 
+    def test_old_malformed_reading_does_not_hide_newer_one(self):
+        def reading(day, value):
+            return event('badanie-techniczne-okresowe', day, details=[{'name': 'Odczytany stan drogomierza', 'value': value}])
+        events = [reading('2023-01-01', 'nieczytelny'), reading('2025-01-01', '95 000 km')]
+        self.assertEqual(api.parse_report(report(events))[2], (95000, 'km', date(2025, 1, 1)))
+        events = [reading('2025-01-01', '95 000 km'), reading('2025-06-01', 'nieczytelny')]
+        self.assertIsNone(api.parse_report(report(events))[2])
+
     def test_first_registration(self):
         self.assertEqual(api.parse_report(report([first()])), (date(2031, 5, 6), date(2031, 5, 7), None))
 

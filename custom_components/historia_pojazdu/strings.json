@@ -3,44 +3,69 @@
     "step": {
       "user": {
         "title": "Historia Pojazdu",
-        "description": "Podaj dane pojazdu. Data pierwszej rejestracji w formacie RRRR-MM-DD.",
+        "description": "Vehicle data from the registration certificate. It will be checked with the Historia Pojazdu service.",
         "data": {
-          "name": "Nazwa",
-          "registration": "Numer rejestracyjny",
+          "name": "Name",
+          "registration": "Registration number",
           "vin": "VIN",
-          "first_registration": "Data pierwszej rejestracji"
+          "first_registration": "First registration date"
+        },
+        "data_description": {
+          "name": "Any name, e.g. the car model.",
+          "registration": "Without spaces, e.g. WA12345.",
+          "vin": "17 characters, field E on the registration certificate.",
+          "first_registration": "Field B on the registration certificate."
+        }
+      },
+      "reconfigure": {
+        "title": "Change vehicle data",
+        "description": "The VIN cannot be changed. Add a new entry for another vehicle.",
+        "data": {
+          "name": "Name",
+          "registration": "Registration number",
+          "first_registration": "First registration date"
+        },
+        "data_description": {
+          "name": "Any name, e.g. the car model.",
+          "registration": "Without spaces, e.g. WA12345.",
+          "first_registration": "Field B on the registration certificate."
         }
       }
     },
     "error": {
-      "invalid_date": "Podaj poprawną datę pierwszej rejestracji w formacie RRRR-MM-DD.",
-      "invalid_data": "Sprawdź nazwę, numer rejestracyjny i VIN."
+      "invalid_name": "Enter a name.",
+      "invalid_registration": "Registration: 2–10 letters and digits.",
+      "invalid_vin": "The VIN must have 17 characters (no I, O, Q).",
+      "invalid_date": "Enter a valid date, not later than today.",
+      "vehicle_rejected": "The service found no vehicle for this data. Check the plates, VIN and date.",
+      "cannot_connect": "Could not reach the Historia Pojazdu service. Try again later."
     },
     "abort": {
-      "already_configured": "Ten pojazd jest już skonfigurowany."
+      "already_configured": "This vehicle is already configured.",
+      "reconfigure_successful": "Vehicle data was updated."
     }
   },
   "entity": {
     "sensor": {
       "insurance": {
-        "name": "Ważność OC"
+        "name": "Insurance (OC) valid until"
       },
       "inspection": {
-        "name": "Następne badanie techniczne"
-      },
-      "last_success": {
-        "name": "Ostatnia udana aktualizacja"
-      },
-      "status": {
-        "name": "Stan pobierania"
+        "name": "Next technical inspection"
       },
       "odometer": {
-        "name": "Ostatni stan licznika z badania"
+        "name": "Odometer at last inspection"
+      },
+      "last_success": {
+        "name": "Last successful update"
+      },
+      "status": {
+        "name": "Retrieval status"
       }
     },
     "button": {
       "refresh": {
-        "name": "Odśwież dane"
+        "name": "Refresh data"
       }
     }
   }
