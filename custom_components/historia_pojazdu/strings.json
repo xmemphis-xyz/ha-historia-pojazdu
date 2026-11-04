@@ -14,7 +14,7 @@
           "name": "Any name, e.g. the car model.",
           "registration": "Without spaces, e.g. WA12345.",
           "vin": "17 characters, field E on the registration certificate.",
-          "first_registration": "Field B on the registration certificate."
+          "first_registration": "Field B on the registration certificate, as DD.MM.YYYY (e.g. 15.03.2018)."
         }
       },
       "reconfigure": {
@@ -28,7 +28,7 @@
         "data_description": {
           "name": "Any name, e.g. the car model.",
           "registration": "Without spaces, e.g. WA12345.",
-          "first_registration": "Field B on the registration certificate."
+          "first_registration": "Field B on the registration certificate, as DD.MM.YYYY (e.g. 15.03.2018)."
         }
       }
     },

@@ -14,7 +14,7 @@ To rozwinięta wersja [jarekgrzabel/ha-historia-pojazdu](https://github.com/jare
    - nazwę (dowolną, np. „Volvo”),
    - numer rejestracyjny (spacje są usuwane automatycznie),
    - VIN (pole E),
-   - datę pierwszej rejestracji (pole B): wybierz ją w kalendarzu albo wpisz jako `RRRR-MM-DD` lub `DD.MM.RRRR`.
+   - datę pierwszej rejestracji (pole B) w formacie `DD.MM.RRRR`, np. `15.03.2018` (`RRRR-MM-DD` też zadziała).
 
    Dane są od razu sprawdzane w usłudze, więc literówka pojawi się jako błąd w formularzu, a nie jako pusty sensor. Każdy samochód to osobny wpis.
 

@@ -14,7 +14,7 @@
           "name": "Dowolna nazwa, np. Volvo.",
           "registration": "Bez spacji, np. WA12345.",
           "vin": "17 znaków, pole E w dowodzie rejestracyjnym.",
-          "first_registration": "Pole B w dowodzie rejestracyjnym."
+          "first_registration": "Pole B w dowodzie rejestracyjnym, w formacie DD.MM.RRRR (np. 15.03.2018)."
         }
       },
       "reconfigure": {
@@ -28,7 +28,7 @@
         "data_description": {
           "name": "Dowolna nazwa, np. Volvo.",
           "registration": "Bez spacji, np. WA12345.",
-          "first_registration": "Pole B w dowodzie rejestracyjnym."
+          "first_registration": "Pole B w dowodzie rejestracyjnym, w formacie DD.MM.RRRR (np. 15.03.2018)."
         }
       }
     },

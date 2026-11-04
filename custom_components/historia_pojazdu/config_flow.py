@@ -9,7 +9,7 @@ from typing import Any
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_NAME
-from homeassistant.helpers.selector import DateSelector, TextSelector, TextSelectorConfig
+from homeassistant.helpers.selector import TextSelector, TextSelectorConfig
 from homeassistant.util import dt as dt_util
 
 from .api import FetchError, VehicleRejected, fetch_report
@@ -17,7 +17,7 @@ from .const import CONF_FIRST_REGISTRATION, CONF_REGISTRATION, CONF_VIN, DOMAIN
 
 
 def _parse_date(raw: Any) -> date | None:
-    """Accept the date picker value (RRRR-MM-DD) or the format from the registration card (DD.MM.RRRR)."""
+    """Accept DD.MM.RRRR (as on the registration card) or RRRR-MM-DD."""
     text = str(raw or '').strip()
     for parse in (date.fromisoformat, lambda s: date(*reversed([int(p) for p in s.split('.')]))):
         try:
@@ -55,7 +55,9 @@ def _schema(defaults: dict, include_vin: bool = True) -> vol.Schema:
     if include_vin:
         fields[vol.Required(CONF_VIN, default=defaults.get(CONF_VIN, vol.UNDEFINED))] = TextSelector(
             TextSelectorConfig(autocomplete='off'))
-    fields[vol.Required(CONF_FIRST_REGISTRATION, default=defaults.get(CONF_FIRST_REGISTRATION, vol.UNDEFINED))] = DateSelector()
+    stored = _parse_date(defaults.get(CONF_FIRST_REGISTRATION))
+    fields[vol.Required(CONF_FIRST_REGISTRATION, default=stored.strftime('%d.%m.%Y') if stored else vol.UNDEFINED)] = \
+        TextSelector(TextSelectorConfig(autocomplete='off'))
     return vol.Schema(fields)
 
 

@@ -49,7 +49,7 @@ def install():
         async def async_save(self, value): self.contents[self.key] = dict(value)
     sys.modules['homeassistant.helpers.storage'].Store = Store
     sel = sys.modules['homeassistant.helpers.selector']
-    for name in ('DateSelector', 'TextSelector', 'TextSelectorConfig'):
+    for name in ('TextSelector', 'TextSelectorConfig'):
         setattr(sel, name, lambda *a, **k: None)
     vol = sys.modules['voluptuous']
     vol.UNDEFINED = object()

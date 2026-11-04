@@ -2,6 +2,11 @@
 
 Wydania tworzy automatycznie workflow `.github/workflows/release.yml` po zmianie `version` w `manifest.json` na gałęzi `main`. Opis wydania to sekcja `## <wersja>` z tego pliku.
 
+## 0.2.1 – 2026-11-04
+
+### Zmiany
+- Datę pierwszej rejestracji wpisuje się teraz w zwykłym polu tekstowym zamiast wybierać w kalendarzu. Obsługiwany format to `DD.MM.RRRR`, tak jak w dowodzie rejestracyjnym (np. `15.03.2018`); `RRRR-MM-DD` też jest akceptowany. Przy zmianie konfiguracji zapisana data wyświetla się w formacie `DD.MM.RRRR`.
+
 ## 0.2.0 – 2026-11-04
 
 Pierwsze wydanie tej wersji integracji, rozwiniętej z [jarekgrzabel/ha-historia-pojazdu](https://github.com/jarekgrzabel/ha-historia-pojazdu).

@@ -13,6 +13,20 @@ VALID = {'name': ' Volvo ', 'registration': 'wa 12345', 'vin': 'yv1uzarv1j123456
 
 
 class NormalizeTests(unittest.TestCase):
+    def test_reconfigure_form_shows_stored_date_as_on_registration_card(self):
+        captured = {}
+        original = flow.vol.Required
+
+        def required(key, **kw):
+            captured[key] = kw.get('default')
+            return key
+        flow.vol.Required = required
+        try:
+            flow._schema({'name': 'Volvo', 'registration': 'WA12345', 'first_registration': '2018-03-15'}, include_vin=False)
+        finally:
+            flow.vol.Required = original
+        self.assertEqual(captured['first_registration'], '15.03.2018')
+
     def test_valid_input_is_normalised(self):
         data, errors = flow._normalize(VALID)
         self.assertEqual(errors, {})
