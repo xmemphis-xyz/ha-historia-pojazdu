@@ -1,0 +1,79 @@
+name: Release
+
+# Publishes a GitHub release (and tag) whenever the version in manifest.json
+# changes on main and no release for that version exists yet. HACS picks the
+# new release up as an update. Release notes come from CHANGELOG.md.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Read version
+        id: version
+        run: |
+          version=$(python3 -c "import json; print(json.load(open('custom_components/historia_pojazdu/manifest.json'))['version'])")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      - name: Check for existing release
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Release ${{ steps.version.outputs.tag }} already exists, nothing to do."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-python@v6
+        if: steps.check.outputs.exists == 'false'
+        with:
+          python-version: "3.13"
+
+      - name: Run tests
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          pip install aiohttp
+          python -m compileall -q custom_components
+          for f in custom_components/historia_pojazdu/*.json custom_components/historia_pojazdu/translations/*.json hacs.json; do
+            python -m json.tool "$f" > /dev/null
+          done
+          python -m unittest discover -s tests -p 'test_*.py' -v
+
+      - name: Extract release notes from CHANGELOG.md
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          awk -v v="${{ steps.version.outputs.version }}" '
+            /^## / { if (found) exit; if ($2 == v) { found = 1; next } }
+            found { print }
+          ' CHANGELOG.md > release_notes.md
+          if [ ! -s release_notes.md ]; then
+            echo "Historia Pojazdu ${{ steps.version.outputs.version }}" > release_notes.md
+          fi
+          cat release_notes.md
+
+      - name: Create release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            --target "$GITHUB_SHA" \
+            --title "Historia Pojazdu ${{ steps.version.outputs.tag }}" \
+            --notes-file release_notes.md

@@ -94,14 +94,6 @@ python -m unittest discover -s tests
 
 Testy wymagają pakietu `aiohttp`. Home Assistant jest w nich zastąpiony atrapami (`tests/_stubs.py`), więc zachowanie w działającym HA trzeba sprawdzić osobno.
 
-## Zmiany względem wersji bazowej (0.2.0)
+## Zmiany i wydania
 
-- Formularz z kalendarzem, akceptujący też datę `DD.MM.RRRR`, z błędami przy konkretnych polach i sprawdzeniem danych w usłudze przed zapisaniem.
-- Opcja **Zmień konfigurację**, przydatna np. przy nowych tablicach. Unikalność wpisu opiera się teraz na samym VIN.
-- Odrzucone dane pojazdu (4xx) nie są ponawiane i mają czytelny komunikat. 429 i 5xx są ponawiane.
-- Logi diagnostyczne bez danych wrażliwych.
-- Uszkodzony odczyt licznika ze starszego badania nie ukrywa już poprawnego, nowszego odczytu.
-- Sensor licznika ma `state_class` i precyzję wyświetlania.
-- Koordynator dostaje `config_entry` (zgodność z nowszymi wersjami HA), a dane trzymane są w `entry.runtime_data`.
-- Urządzenie typu usługa z linkiem do serwisu oraz tłumaczenia angielskie.
-- Usunięto zduplikowany atrybut `problem` z sensorów dat; problem pokazuje sensor „Stan pobierania”.
+Historia zmian jest w [CHANGELOG.md](CHANGELOG.md). Nowe wydanie tworzy się samo po zmianie `version` w `manifest.json` na gałęzi `main`, o ile w CHANGELOG jest sekcja `## <wersja>`.
